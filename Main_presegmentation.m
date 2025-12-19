@@ -1,23 +1,35 @@
 clc
-clear 
 close all
-warning off
-addpath(genpath('.'));
-path=('./DRIONS-DB/');
+clear all
+% load ID
+path=('./Drishti-GS1_files/');
 Data=dir(path);
 Data(1:2)=[];
-out=[path(3:end-1),'_'];
-mkdir(out)
-for N1=1:length(Data)
+addpath(genpath('.'))
+for N1=2:2
+    % I1=imresize(imread('drishtiGS_032.png'),[256 256]);
     Read_fol=[path,Data(N1).name '/'];
     Read_fol1=dir(Read_fol);
     Read_fol1(1:2)=[];
-%     aa=[out '/',Data(N1).name];
-%     mkdir(aa)
-    for N2=1:19
-        Get=[Read_fol,Read_fol1(N2).name];
-        I=imread (Get);
-        hm=0.2;
+    for N2=2:length(Read_fol1)
+        Get=[Read_fol,Read_fol1(N2).name '/'];
+        Read_1=[Read_fol,Read_fol1(1).name '/'];
+        Read_2=dir(Read_1);
+        Read_2(1:2)=[];
+        Get1=dir(Get);
+        Get1(1:2)=[];
+        for N3=1:length(Get1)
+            Fol=[Read_1,Read_2(N3).name '/'];
+            Fol1=dir(Fol);
+            Fol1(1:2)=[];
+            Read_=[Get,Get1(N3).name];
+            gd_fol=[Fol,Fol1(N2).name '/'];
+            Read=dir(gd_fol);
+            Read(1:2)=[];
+            GT1=imread([gd_fol,Read(1).name]);
+            I=imresize(imread(Read_),[512 512]);%% Image read
+            GT1=imresize(GT1,[512 512]);
+            hm=0.2;
         d0=200;
         rH=1.8631;
         rL= 0.01;
@@ -52,13 +64,13 @@ for N1=1:length(Data)
             I24(i,:)=mean2(I23);
         end
         [I25,id]=max(I24);
-        figure(2),imshow(uint8(logical(III)).*II), title('Entrophy image')
+%         figure(2),imshow(uint8(logical(III)).*II), title('Entrophy image')
         B_Box=va1(id).BoundingBox;
         final_out=imcrop(I,[B_Box(1)-48*2 B_Box(2)-48*2 B_Box(3)+96*2 B_Box(4)+96*2]);
         Cropped_img_=final_out;
         final_out(:,:,1)=imadjust(final_out(:,:,1));
-        figure
-        imshow(final_out);
+%         figure
+%         imshow(final_out);
         %% segmentation 
           [cImg,~,~,~,dlImg]=processImage(final_out);
           [cImg_,~,~,~,dlImg_]=processImage_1(final_out);
@@ -86,17 +98,6 @@ for N1=1:length(Data)
         se = strel('disk',1);
         OD_groundTruth = imdilate(Final_OD1==A1,se);
         Final_OD1=(Final_OD1==A1);
-%           figure;
-%           subplot(1, 2, 1);
-%           imshow(cImg);
-%           title('Original Image');
-%           hold on;
-%           plot(x,y,'g','LineWidth',1);
-%           hold off;
-%           subplot(1, 2, 2);
-%           imshow(segmentedimage);
-%           title('segmented region');
-%          subImgHough(r,c,I,cImg,x,y);
 %% ESISTING 
           % Hough transform
           [circCent,circRad]=houghTransform(dlImg_,30,65,20,20,0.8);
@@ -118,15 +119,15 @@ for N1=1:length(Data)
         OD_groundTruth_E = imerode(Final_OD1_==B1,se);
         Final_OD1_ =(Final_OD1_==B1);
         Final_OD=imcrop(Cropped_img_.*uint8(Final_OD1),Bounding_box_value_od);
-%         figure,subplot(2,1,1),imshow(Cropped_img_,[])
-%         title('Cropped Image')
-%         subplot(2,1,2),imshow(OD_groundTruth,[])
-%         title('GroundTruth');
-%         figure,subplot(2,1,1),imshow(I,[]);
-%         title('Original Image')
-%         Final_OD=imresize(Final_OD,[224 224]);
-%         subplot(2, 1, 2),imshow(Final_OD)
-%         title('Segmented disc Image')
+        figure,subplot(2,1,1),imshow(Cropped_img_,[])
+        title('Cropped Image')
+        subplot(2,1,2),imshow(OD_groundTruth,[])
+        title('GroundTruth');
+        figure,subplot(2,1,1),imshow(I,[]);
+        title('Original Image')
+        Final_OD=imresize(Final_OD,[224 224]);
+        subplot(2, 1, 2),imshow(Final_OD)
+        title('Segmented disc Image')
 %         imwrite(im2double(Final_OD),[aa '/',Read_fol1(N2).name]);
         %% jacard distance calculation
         [Accuracy_P, FN_P, FP_P,TP_P, TN_P,Sensitivity_P,...
@@ -171,4 +172,5 @@ for N1=1:length(Data)
         %     figure,imshow(imcrop(I,[B_Box(1)-48*2 B_Box(2)-48*2 B_Box(3)+96*2 B_Box(4)+96*2]))
         % figure,imshow(imcrop(I,B_Box))
     end 
-end 
+    end 
+end

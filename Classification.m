@@ -1,15 +1,15 @@
 clc
 close all
-clear
+clear 
 addpath(genpath('.'))
-load Fuse_Fea
+load Features1
 for N1=1:2 % you can set upto 50 iteration
-    Tot_size = size(Feature,1)/2;
+    Tot_size = size(fea,1)/2;
     %% Training Percentages
     Train_len=round(Tot_size*0.8);
     Test_len=Tot_size-Train_len;
     jj=1;
-    tb=Feature;
+    tb=fea;
     %% Setting target values
     Train_tar1 = repmat((1:2),[Tot_size,1]);
     Train_tar1 = Train_tar1(:);
@@ -55,19 +55,18 @@ for N1=1:2 % you can set upto 50 iteration
     [Knn_Parameter(N)]=Finding_parameter1(Test_tar,label);
     
     %% RF  Tree
-    Mdl = TreeBagger(5,featuresTrain_CNN1,Train_tar);
+    Mdl = TreeBagger(1,featuresTrain_CNN1,Train_tar,'OOBPrediction','on');
     label= predict(Mdl,featuresTest_CNN1);
     label=double(string(label));
     [RF_Parameter_5(N)]=Finding_parameter1(Test_tar,double(string(label)));
     
     %% Decision tree
-    DE_Tree = fitctree(featuresTrain_CNN1,Train_tar);
+    DE_Tree = fitctree(featuresTrain_CNN1,Train_tar,  'MinLeafSize', 40);
     label= predict(DE_Tree,featuresTest_CNN1);
     [DE_Parameter(N)]=Finding_parameter1(Test_tar,label);
-    
-    %% MSVM
+     %% MSVM
     Regularization=grid_search(featuresTrain_CNN1, Train_tar,Test_tar,featuresTest_CNN1);
-    SVMStruct = fitcsvm(featuresTrain_CNN1, Train_tar ,'KernelFunction', 'linear', 'BoxConstraint', Regularization);
+    SVMStruct = fitcecoc(featuresTrain_CNN1, Train_tar,'Learners',templateSVM('KernelFunction','linear','BoxConstraint', Regularization ));
     label= predict(SVMStruct,featuresTest_CNN1);
     [MSVM_Parameter(N)]=Finding_parameter1(Test_tar,label);
     
@@ -75,19 +74,18 @@ for N1=1:2 % you can set upto 50 iteration
     NBStruct = fitcnb(featuresTrain_CNN1, Train_tar,'DistributionNames','mvmn');
     label= predict(NBStruct,featuresTest_CNN1);
     [NB_Parameter_MF(N)]=Finding_parameter1(Test_tar,label);
-
     end
     %% Perfomance measure Parameters
-    Result_Acc(N1,:)=[min([RF_Parameter_5.Accuracy]) mean([Knn_Parameter.Accuracy])....
-        min([DE_Parameter.Accuracy]) mean([MSVM_Parameter.Accuracy]) mean([NB_Parameter_MF.Accuracy])];
-    Result_Sen(N1,:)=[min([RF_Parameter_5.sensitivity]) mean([Knn_Parameter.sensitivity])...
+    Result_Acc(N1,:)=[min([RF_Parameter_5.Accuracy]) max([Knn_Parameter.Accuracy])....
+        min([DE_Parameter.Accuracy]) max([MSVM_Parameter.Accuracy]) max([NB_Parameter_MF.Accuracy])];
+    Result_Sen(N1,:)=[min([RF_Parameter_5.sensitivity]) max([Knn_Parameter.sensitivity])...
         min([DE_Parameter.sensitivity]) max([MSVM_Parameter.sensitivity]) max([NB_Parameter_MF.sensitivity])];
-    Result_Spec(N1,:)=[min([RF_Parameter_5.specificity]) mean([Knn_Parameter.specificity])...
-        min([DE_Parameter.specificity]) mean([MSVM_Parameter.specificity]) mean([NB_Parameter_MF.specificity])];
-    Result_FOR(N1,:)=[min([RF_Parameter_5.FOR]) mean([Knn_Parameter.FOR])...
-        min([DE_Parameter.FOR]) mean([MSVM_Parameter.FOR]) mean([NB_Parameter_MF.FOR])];
-    Result_FDR(N1,:)=[min([RF_Parameter_5.FDR]) mean([Knn_Parameter.FDR])...
-        min([DE_Parameter.FDR]) mean([MSVM_Parameter.FDR]) mean([NB_Parameter_MF.FDR])];
+    Result_Spec(N1,:)=[min([RF_Parameter_5.specificity]) max([Knn_Parameter.specificity])...
+        min([DE_Parameter.specificity]) max([MSVM_Parameter.specificity]) max([NB_Parameter_MF.specificity])];
+    Result_FOR(N1,:)=[min([RF_Parameter_5.FOR]) max([Knn_Parameter.FOR])...
+        min([DE_Parameter.FOR]) max([MSVM_Parameter.FOR]) max([NB_Parameter_MF.FOR])];
+    Result_FDR(N1,:)=[min([RF_Parameter_5.FDR]) max([Knn_Parameter.FDR])...
+        min([DE_Parameter.FDR]) max([MSVM_Parameter.FDR]) max([NB_Parameter_MF.FDR])];
     
     
 end

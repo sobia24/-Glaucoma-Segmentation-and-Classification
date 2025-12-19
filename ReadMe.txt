@@ -9,13 +9,12 @@ Open code folder and run only below mentioned m files.
 Total M-file 
 Main file                  
 1)Classification.m
-2)Feature_extraction.m (This m file no need to run)
-3)Main_DRIONS.m (Segmentation file)
+2)Feature_extraction.m (This m file no need to run, already ran the file and saved the features in the mat file)
+3)Drishti_Main.m (Segmentation file)
 4)Feature_CNN.m  (This m file no need to run, already ran the file and saved resnet features in the mat file)
 
-
 Function file                                                
-5)Support_file		(Dont run m file in this folder)
+4)Support_file		(Dont run m file in this folder)
 
 
 

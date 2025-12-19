@@ -1,6 +1,6 @@
 clc
 close all
-clear 
+clear all
 addpath(genpath('.'))
 path = './DRIONS-DB_/';
 path1= dir(path);
@@ -31,4 +31,4 @@ save Fea_DRIONS Feal
 load Features
 load Fea_DRIONS
 Feature=[fea,Feal];
-save Fuse_Fea Feature
+% save Fuse_Fea Feature
