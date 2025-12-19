@@ -1,35 +1,17 @@
 clc
+clear 
 close all
-clear all
-% load ID
-path=('./Drishti-GS1_files/');
+warning off
+addpath(genpath('.'));
+path=('./CHASEDB1/');
 Data=dir(path);
 Data(1:2)=[];
-addpath(genpath('.'))
-for N1=2:2
-    % I1=imresize(imread('drishtiGS_032.png'),[256 256]);
-    Read_fol=[path,Data(N1).name '/'];
-    Read_fol1=dir(Read_fol);
-    Read_fol1(1:2)=[];
-    for N2=2:length(Read_fol1)
-        Get=[Read_fol,Read_fol1(N2).name '/'];
-        Read_1=[Read_fol,Read_fol1(1).name '/'];
-        Read_2=dir(Read_1);
-        Read_2(1:2)=[];
-        Get1=dir(Get);
-        Get1(1:2)=[];
-        for N3=1:length(Get1)
-            Fol=[Read_1,Read_2(N3).name '/'];
-            Fol1=dir(Fol);
-            Fol1(1:2)=[];
-            Read_=[Get,Get1(N3).name];
-            gd_fol=[Fol,Fol1(N2).name '/'];
-            Read=dir(gd_fol);
-            Read(1:2)=[];
-            GT1=imread([gd_fol,Read(1).name]);
-            I=imresize(imread(Read_),[512 512]);%% Image read
-            GT1=imresize(GT1,[512 512]);
-            hm=0.2;
+out=[path(3:end-1),'segmented_out'];
+mkdir(out)
+for N1=1:length(Data)
+    Get=[path,Data(N1).name];
+        I=imread (Get);
+        hm=0.2;
         d0=200;
         rH=1.8631;
         rL= 0.01;
@@ -89,7 +71,7 @@ for N1=2:2
         Final_OD1=bwlabel(Final_OD);
         s = regionprops(Final_OD1,'all');
         [A,A1]=max([(s.Area)]);
-        if isempty(A)|| N2==10
+        if isempty(A)|| N1==10
             Final_OD1=bwlabel(sal_OD);
             s = regionprops(Final_OD1,'all');
             [A,A1]=max([(s.Area)]);
@@ -98,6 +80,17 @@ for N1=2:2
         se = strel('disk',1);
         OD_groundTruth = imdilate(Final_OD1==A1,se);
         Final_OD1=(Final_OD1==A1);
+%           figure;
+%           subplot(1, 2, 1);
+%           imshow(cImg);
+%           title('Original Image');
+%           hold on;
+%           plot(x,y,'g','LineWidth',1);
+%           hold off;
+%           subplot(1, 2, 2);
+%           imshow(segmentedimage);
+%           title('segmented region');
+%          subImgHough(r,c,I,cImg,x,y);
 %% ESISTING 
           % Hough transform
           [circCent,circRad]=houghTransform(dlImg_,30,65,20,20,0.8);
@@ -128,7 +121,6 @@ for N1=2:2
         Final_OD=imresize(Final_OD,[224 224]);
         subplot(2, 1, 2),imshow(Final_OD)
         title('Segmented disc Image')
-%         imwrite(im2double(Final_OD),[aa '/',Read_fol1(N2).name]);
         %% jacard distance calculation
         [Accuracy_P, FN_P, FP_P,TP_P, TN_P,Sensitivity_P,...
             Dice_P, Jaccard_P] = EvaluateImageSegmentationScores(OD_groundTruth,(Final_OD1));
@@ -172,5 +164,4 @@ for N1=2:2
         %     figure,imshow(imcrop(I,[B_Box(1)-48*2 B_Box(2)-48*2 B_Box(3)+96*2 B_Box(4)+96*2]))
         % figure,imshow(imcrop(I,B_Box))
     end 
-    end 
-end
+    
